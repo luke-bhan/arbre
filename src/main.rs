@@ -2,6 +2,21 @@ use std::env;
 use std::path::Path;
 use std::fs;
 
+mod workspace;
+use workspace::Workspace;
+
+mod blob;
+use blob::Blob;
+
+mod database;
+use database::Database;
+
+mod tree;
+use tree::Tree;
+
+mod entry;
+use entry::Entry;
+
 pub fn init(path: &Path) {
     let git_path = path.join(".git");
 
@@ -24,7 +39,27 @@ fn main() -> std::io::Result<()> {
                     Some(dir) => init(&Path::new(dir).canonicalize().unwrap()),
                     None => init(&env::current_dir()?),
                 };
-            } else {
+            }
+            else if String::from("commit") == cmd.to_string() {
+                let root_path = env::current_dir()?;
+                let git_path = root_path.join(".git");
+                let db_path = git_path.join("objects");
+                let ws = Workspace::new(&root_path);
+                let db = Database::new(db_path.as_path());
+                let mut entries: Vec<Entry> = Vec::new();
+
+                for file in ws.list_files().iter() {
+                    let data = ws.read_file(file);
+                    let blob = Blob::new(data);
+                    let oid = db.store(blob, "blob".to_string());
+
+                    entries.push(Entry::new(file.as_path().to_str().unwrap().to_string(), oid));
+                }
+
+                let tree = Tree::new(entries);
+                db.store(Blob::from(tree), "tree".to_string());
+            }
+            else {
                 print!("No command named {}", cmd);
             }
         },
@@ -32,9 +67,3 @@ fn main() -> std::io::Result<()> {
     };
     Ok(())
 }
-
-
-    
-
-
-
