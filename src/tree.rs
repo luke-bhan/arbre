@@ -3,9 +3,6 @@ use hex::FromHex;
 
 use crate::entry::Entry;
 use std::fmt;
-use std::str;
-
-static MODE: &str = "100644";
 
 pub struct Tree {
     entries: Vec<Entry>
@@ -16,6 +13,7 @@ impl Tree {
         entries.sort_by(|a, b| a.name.to_lowercase().cmp(&b.name.to_lowercase()));
         Tree{entries}
     }
+
 }
 
 impl fmt::Display for Tree {
@@ -27,7 +25,7 @@ impl fmt::Display for Tree {
             for item in packed {
                 packed_str.push(item as char);
             }
-            res = format!("{}{} {}{}", res, MODE, val.name, packed_str);
+            res = format!("{}{} {}{}", res, val.mode(), val.name, packed_str);
         }
         write!(f, "{}", res)
     }

@@ -64,12 +64,13 @@ fn main() -> std::io::Result<()> {
                 let refs = Refs::new(&git_path);
                 let mut entries: Vec<Entry> = Vec::new();
 
-                for file in ws.list_files().iter() {
+                for file in ws.list_files(None).iter() {
                     let data = ws.read_file(file);
                     let blob = Blob::new(data);
                     let oid = db.store(blob, "blob".to_string());
 
-                    entries.push(Entry::new(file.as_path().to_str().unwrap().to_string(), oid));
+                    let stat = Workspace::<'_>::stat_file(file);
+                    entries.push(Entry::new(file.as_path().to_str().unwrap().to_string(), oid, stat));
                 }
 
                 let tree = Tree::new(entries);
