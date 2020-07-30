@@ -1,6 +1,10 @@
 use std::env;
 use std::path::Path;
 use std::fs;
+use std::io::{self, Read};
+use std::fs::File;
+use std::io::prelude::*;
+use chrono::prelude::*;
 
 mod workspace;
 use workspace::Workspace;
@@ -16,6 +20,12 @@ use tree::Tree;
 
 mod entry;
 use entry::Entry;
+
+mod author;
+use author::Author;
+
+mod commit;
+use commit::Commit;
 
 pub fn init(path: &Path) {
     let git_path = path.join(".git");
@@ -57,7 +67,21 @@ fn main() -> std::io::Result<()> {
                 }
 
                 let tree = Tree::new(entries);
-                db.store(Blob::from(tree), "tree".to_string());
+                let tree_oid = db.store(Blob::from(tree), "tree".to_string());
+
+                let name = env!("GIT_AUTHOR_NAME").to_string();
+                let email = env!("GIT_AUTHOR_EMAIL").to_string();
+
+                let local: DateTime<Local> = Local::now();
+                let author = Author::new(name, email, Local::now());
+                let mut message = String::new();
+                io::stdin().read_to_string(&mut message)?;
+
+                let commit = Commit::new(tree_oid, author, message.clone());
+                let commit_oid = db.store(Blob::from(commit), "commit".to_string());
+                let mut file = File::create(git_path.join("HEAD")).unwrap();
+                file.write(commit_oid.as_ref());
+                print!("[(root-commit) {}] {}", commit_oid, message.lines().next().unwrap());
             }
             else {
                 print!("No command named {}", cmd);

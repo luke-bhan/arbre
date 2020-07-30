@@ -27,8 +27,7 @@ impl fmt::Display for Tree {
             for item in packed {
                 packed_str.push(item as char);
             }
-            let entry_str = format!("{} {}{}", MODE, val.name, packed_str);
-            res = format!("{}{}", res, entry_str);
+            res = format!("{}{} {}{}", res, MODE, val.name, packed_str);
         }
         write!(f, "{}", res)
     }

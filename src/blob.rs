@@ -1,5 +1,7 @@
 use std::fmt;
 use crate::tree::Tree;
+use crate::author::Author;
+use crate::commit::Commit;
 
 pub struct Blob {
     data: String,
@@ -19,8 +21,18 @@ impl fmt::Display for Blob {
 
 impl From<Tree> for Blob {
     fn from(tree: Tree) -> Self {
-        print!("{}", tree.to_string());
         Blob::new(tree.to_string())
     }
 }
 
+impl From<Author> for Blob {
+    fn from(author: Author) -> Self {
+        Blob::new(author.to_string())
+    }
+}
+
+impl From<Commit> for Blob {
+    fn from(commit: Commit) -> Self {
+        Blob::new(commit.to_string())
+    }
+}
