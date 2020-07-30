@@ -43,6 +43,9 @@ impl Database<'_> {
         }
         let tmp_path = &dir_path.join(Database::generate_temp_name());
         let object_path = &dir_path.join(&oid[2..(oid.len())]);
+        if object_path.exists() {
+            return
+        }
 
         let mut file = File::create(tmp_path).unwrap();
         let mut encoder = ZlibEncoder::new(Vec::new(), Compression::Default);
